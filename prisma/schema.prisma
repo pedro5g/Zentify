@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Providers {
+  EMAIL
+  GOOGLE
+
+  @@map("providers_type")
+}
+
+enum VerificationType {
+  EMAIL_VERIFY
+  FORGET_PASSWORD
+
+  @@map("verification_type")
+}
+
+enum Status {
+  PENDING
+  CANCELED
+  FAILURE
+  SENDED
+
+  @@map("status_type")
+}
+
+model User {
+  id            String  @id @default(uuid())
+  name          String
+  email         String? @unique
+  password      String?
+  profileUrl    String? @map("profile_url")
+  emailVerified Boolean @default(false) @map("email_verified")
+
+  lastLogin DateTime? @map("last_login")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt() @map("updated_at")
+  accounts  Account[]
+  jobs      Job[]
+
+  @@map("users")
+}
+
+model Account {
+  id String @id @default(uuid())
+
+  provider          Providers
+  providerIdOrEmail String    @map("provider_id_or_email")
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  userId    String   @map("user_id")
+
+  @@map("accounts")
+}
+
+model VerificationCode {
+  userId String @id @map("user_id")
+
+  code Status           @unique
+  type VerificationType
+
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("verification_codes")
+}
+
+model Job {
+  id String @id @default(uuid())
+
+  phone         String
+  message       String
+  scheduledTime DateTime @map("scheduled_time")
+  isActive      Boolean  @default(true) @map("is_active")
+  isDaily       Boolean  @default(false) @map("is_daily")
+
+  status Status @default(PENDING)
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("jobs")
+}

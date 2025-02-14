@@ -2,7 +2,8 @@ import { Logger } from '@nestjs/common';
 import { z } from 'zod';
 
 export const envSchema = z.object({
-  PORT: z.coerce.number().int(),
+  PORT: z.coerce.number().default(8000),
+  DATABASE_URL: z.string().url(),
 });
 
 export const parseEnvironment = (env: unknown) => {
