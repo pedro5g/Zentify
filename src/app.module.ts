@@ -3,6 +3,7 @@ import { EnvModule } from './env/env.module';
 import { ConfigModule } from '@nestjs/config';
 import { parseEnvironment } from './env/env';
 import { DbModule } from './db/db.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { DbModule } from './db/db.module';
     }),
     EnvModule,
     DbModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
