@@ -6,6 +6,7 @@ export const envSchema = z.object({
   JWT_SECRET_KEY: z.string().min(1),
   JWT_PUBLIC_KEY: z.string().min(1),
   DATABASE_URL: z.string().url(),
+  FRONTEND_URL: z.string().url(),
 });
 
 export const parseEnvironment = (env: unknown) => {
