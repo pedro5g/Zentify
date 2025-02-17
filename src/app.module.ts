@@ -5,6 +5,7 @@ import { parseEnvironment } from './env/env';
 import { DbModule } from './db/db.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { UserModule } from './user/user.module';
     DbModule,
     AuthModule,
     UserModule,
+    MailModule,
   ],
 })
 export class AppModule {}

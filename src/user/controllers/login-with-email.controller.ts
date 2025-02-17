@@ -14,7 +14,7 @@ import { Response as ResponseType } from 'express';
 
 @Controller('user/auth')
 export class LoginWithEmailController {
-  constructor(private readonly LoginWithEmailService: LoginWithEmailService) {}
+  constructor(private readonly loginWithEmailService: LoginWithEmailService) {}
 
   @Post('/login')
   @HttpCode(200)
@@ -23,7 +23,7 @@ export class LoginWithEmailController {
   async handle(@Body() body: LoginSchema, @Response() res: ResponseType) {
     const { email, password } = body;
 
-    const { user, accessToken } = await this.LoginWithEmailService.execute({
+    const { user, accessToken } = await this.loginWithEmailService.execute({
       email,
       password,
     });

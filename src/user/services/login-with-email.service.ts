@@ -1,13 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { UserRepository } from '../repository/user.repository';
+import { UserRepository } from '../repository/user-repository.interface';
 import { LoginWithEmailServiceDTO } from './dtos/login-service.dto';
 import { comparePassword } from '@/core/helpers/cryptography';
 import { JwtService } from '@nestjs/jwt';
+import { MailService } from '@/mail/mail.service';
 
 @Injectable()
 export class LoginWithEmailService {
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly mailService: MailService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -22,7 +24,7 @@ export class LoginWithEmailService {
 
     if (!user.password) {
       throw new BadRequestException(
-        `It looks like you created your account using Google. Try signing in with Google or resetting your password.`,
+        `It looks like you created your account using Google. Try signing in with Google`,
       );
     }
 
@@ -31,6 +33,13 @@ export class LoginWithEmailService {
     if (!isMatch) {
       throw new BadRequestException(
         'Ooh no! Your email or password are invalid',
+      );
+    }
+
+    if (!user.emailVerified) {
+      await this.mailService.sendEmailVerify({ userId: user.id, email });
+      throw new BadRequestException(
+        `Please, check your email box to confirmation it email before trying login`,
       );
     }
 

@@ -41,6 +41,7 @@ model User {
   name          String
   email         String? @unique
   password      String?
+  phone         String?
   profileUrl    String? @map("profile_url")
   emailVerified Boolean @default(false) @map("email_verified")
 
@@ -59,7 +60,7 @@ model Account {
   provider          Providers
   providerIdOrEmail String    @map("provider_id_or_email")
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map("created_at")
   userId    String   @map("user_id")
@@ -70,7 +71,7 @@ model Account {
 model VerificationCode {
   userId String @id @map("user_id")
 
-  code Status           @unique
+  code String           @unique
   type VerificationType
 
   expiresAt DateTime @map("expires_at")
@@ -90,7 +91,7 @@ model Job {
 
   status Status @default(PENDING)
 
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String @map("user_id")
 
   createdAt DateTime @default(now()) @map("created_at")

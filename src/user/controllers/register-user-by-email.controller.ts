@@ -21,5 +21,9 @@ export class RegisterUserByEmailController {
     const { name, email, password } = body;
 
     await this.registerByEmailService.execute({ name, email, password });
+
+    return {
+      message: 'We have sent you an email, please check your email box.',
+    };
   }
 }

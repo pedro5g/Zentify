@@ -1,13 +1,27 @@
 import { RegisterByEmailService } from '@/user/services/register-by-email.service';
 import { IMUserRepository } from '../repository/im-user-repository';
 import { comparePassword } from '@/core/helpers/cryptography';
+import { MailService } from '@/mail/mail.service';
 
 let userRepository: IMUserRepository;
 let sub: RegisterByEmailService;
+
+const fakeMailService = {
+  sendEmailVerify: async ({
+    userId,
+    email,
+  }: {
+    userId: string;
+    email: string;
+  }) => {
+    // console.log(`confirm-email/${userId}`);
+  },
+} as MailService;
+
 describe('[Service Tests] - Register By Email Service', () => {
   beforeEach(() => {
     userRepository = new IMUserRepository();
-    sub = new RegisterByEmailService(userRepository);
+    sub = new RegisterByEmailService(userRepository, fakeMailService);
   });
 
   it('Should be able to register new user', async () => {
@@ -30,6 +44,20 @@ describe('[Service Tests] - Register By Email Service', () => {
         emailVerified: false,
       }),
     );
+  });
+
+  it('should be able to send a email after registered user', async () => {
+    const data = {
+      name: 'Test',
+      email: 'test@gmail.com',
+      password: '123456',
+    };
+
+    const spyEmail = vitest.spyOn(fakeMailService, 'sendEmailVerify');
+
+    await sub.execute(data);
+
+    expect(spyEmail).toBeCalledTimes(1);
   });
 
   it('Should be able to encrypt the user password', async () => {
