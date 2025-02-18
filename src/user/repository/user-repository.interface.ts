@@ -6,6 +6,7 @@ import { SetEmailVerifyDTO } from './dtos/set-email-verify-dto';
 import { RegisterResetPasswordDTO } from './dtos/register-reset-password.dto';
 import { ResetUserPasswordDTO } from './dtos/reset-user-password.dto';
 import { UserWithResetCode } from './models/user-with-reset-code';
+import { CountResetCodeByTimeDTO } from './dtos/count-reset-code-by-time.dto';
 
 export abstract class UserRepository {
   abstract registerByEmail(args: RegisterByEmailDTO): Promise<User>;
@@ -13,7 +14,9 @@ export abstract class UserRepository {
   abstract updateUser(args: UpdateUserDTO): Promise<User>;
   abstract setEmailVerify(args: SetEmailVerifyDTO): Promise<void>;
   abstract resetUserPassword(args: ResetUserPasswordDTO): Promise<void>;
+  abstract countResetCodeByTime(args: CountResetCodeByTimeDTO): Promise<number>;
   abstract deleteResetPasswordCode(code: string): Promise<void>;
+  abstract deleteManyResetPasswordCode(userId: string): Promise<void>;
   abstract getResetPasswordCodeByCode(
     code: string,
   ): Promise<UserWithResetCode | null>;

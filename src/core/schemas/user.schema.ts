@@ -25,7 +25,7 @@ export const forgetPasswordSchema = z.object({
 
 export const resetPasswordSchema = z.object({
   password: passwordSchema,
-  code: z.string().trim(),
+  code: z.string().trim().min(10).max(10),
 });
 
 export type RegisterByEmailSchema = z.infer<typeof registerByEmailSchema>;

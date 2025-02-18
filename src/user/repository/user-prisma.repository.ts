@@ -10,6 +10,7 @@ import { SetEmailVerifyDTO } from './dtos/set-email-verify-dto';
 import { RegisterResetPasswordDTO } from './dtos/register-reset-password.dto';
 import { ResetUserPasswordDTO } from './dtos/reset-user-password.dto';
 import { UserWithResetCode } from './models/user-with-reset-code';
+import { CountResetCodeByTimeDTO } from './dtos/count-reset-code-by-time.dto';
 
 @Injectable()
 export class PrismaUserRepository implements UserRepository {
@@ -125,26 +126,44 @@ export class PrismaUserRepository implements UserRepository {
     });
   }
 
+  async countResetCodeByTime({
+    userId,
+    time,
+  }: CountResetCodeByTimeDTO): Promise<number> {
+    const count = await this.prisma.verificationCode.count({
+      where: {
+        userId,
+        type: 'FORGET_PASSWORD',
+        createdAt: { gt: time },
+      },
+    });
+
+    return count;
+  }
+
   async getResetPasswordCodeByCode(
     code: string,
   ): Promise<UserWithResetCode | null> {
     const [resetCode] = await this.prisma.$queryRaw<UserWithResetCode[]>`
-      SELECT v."user_id" AS "userId", v."code", v."type",
-      v."expires_at" AS "expiresAt", 
-      u."id", u."name", u."email", u."phone",
-      u."email_verified" AS "emailVerified" 
-      FROM "verification_codes" AS v
-      JOIN "users" AS u ON v."user_id" = u."id" 
-      WHERE v."code" = ${code} LIMIT 1;
+      SELECT v."user_id" AS "userId", v."id" AS "resetId", v."code", v."type",
+      v."expires_at" AS "expiresAt", u."id", u."name", u."email", u."phone",
+      u."email_verified" AS "emailVerified" FROM "verification_codes" AS v
+      JOIN "users" AS u ON v."user_id" = u."id" WHERE v."code" = ${code} LIMIT 1;
     `;
-
-    console.log('resetCode', resetCode);
 
     return resetCode;
   }
 
   async deleteResetPasswordCode(code: string): Promise<void> {
     await this.prisma.verificationCode.delete({ where: { code } });
+  }
+
+  async deleteManyResetPasswordCode(userId: string): Promise<void> {
+    await this.prisma.verificationCode.deleteMany({
+      where: {
+        userId,
+      },
+    });
   }
 
   async findByEmail(email: string): Promise<User | null> {

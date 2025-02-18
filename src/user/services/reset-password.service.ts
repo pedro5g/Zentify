@@ -25,6 +25,6 @@ export class ResetPasswordService {
       password: passwordHash,
     });
 
-    await this.userRepository.deleteResetPasswordCode(code);
+    this.userRepository.deleteManyResetPasswordCode(resetCode.id);
   }
 }

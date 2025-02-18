@@ -1,6 +1,7 @@
 import { ValidationTypes } from '@/core/enums/validation-types.enum';
 
 export interface UserWithResetCode {
+  resetId: number;
   userId: string;
   code: string;
   type: ValidationTypes;

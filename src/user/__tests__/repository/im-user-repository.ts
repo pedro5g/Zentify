@@ -1,3 +1,4 @@
+import { CountResetCodeByTimeDTO } from '@/user/repository/dtos/count-reset-code-by-time.dto';
 import { RegisterAccountDTO } from '@/user/repository/dtos/register-account.dto';
 import { RegisterByEmailDTO } from '@/user/repository/dtos/register-by-email.dto';
 import { RegisterResetPasswordDTO } from '@/user/repository/dtos/register-reset-password.dto';
@@ -16,6 +17,7 @@ export class IMUserRepository implements UserRepository {
   public users: User[] = [];
   public accounts: Account[] = [];
   public resetPasswordCodes: ResetPasswordCode[] = [];
+  private autoIncrement = 0;
 
   async registerByEmail({
     name,
@@ -27,6 +29,7 @@ export class IMUserRepository implements UserRepository {
       name,
       email,
       password,
+      phone: null,
       emailVerified: false,
       profileUrl: null,
       lastLogin: null,
@@ -61,6 +64,7 @@ export class IMUserRepository implements UserRepository {
       email: email || null,
       password: null,
       emailVerified: true,
+      phone: null,
       profileUrl: profileUrl || null,
       lastLogin: null,
       updatedAt: new Date(),
@@ -134,12 +138,15 @@ export class IMUserRepository implements UserRepository {
     expiresAt,
   }: RegisterResetPasswordDTO): Promise<void> {
     const resetPasswordCode: ResetPasswordCode = {
+      id: this.autoIncrement,
       userId,
       code,
       type: 'FORGET_PASSWORD',
       expiresAt,
       createdAt: new Date(),
     };
+
+    this.autoIncrement++;
 
     this.resetPasswordCodes.push(resetPasswordCode);
   }
@@ -150,6 +157,30 @@ export class IMUserRepository implements UserRepository {
     );
   }
 
+  async deleteManyResetPasswordCode(userId: string): Promise<void> {
+    this.resetPasswordCodes = this.resetPasswordCodes.filter(
+      (code) => code.userId !== userId,
+    );
+  }
+
+  async countResetCodeByTime({
+    userId,
+    time,
+  }: CountResetCodeByTimeDTO): Promise<number> {
+    let count = 0;
+
+    this.resetPasswordCodes.forEach((resetCode) => {
+      if (
+        (resetCode.userId === userId,
+        new Date(resetCode.createdAt).getTime() <= new Date(time).getTime())
+      ) {
+        count += 1;
+      }
+    });
+
+    return count;
+  }
+
   async getResetPasswordCodeByCode(
     code: string,
   ): Promise<UserWithResetCode | null> {
@@ -158,10 +189,11 @@ export class IMUserRepository implements UserRepository {
     )!;
     const user = this.users.find((user) => user.id === resetCode.userId)!;
 
-    const { createdAt, ...rest } = resetCode;
+    const { id, createdAt, ...rest } = resetCode;
 
     return {
       ...rest,
+      resetId: id,
       id: user.id,
       name: user.name,
       email: user.email!,

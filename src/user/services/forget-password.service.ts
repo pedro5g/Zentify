@@ -29,8 +29,20 @@ export class ForgetPasswordService {
       );
     }
 
+    const threeMinutesAgo = addMinutes(-3);
+    const MAX_ATTEMPTS = 2;
+
+    const count = await this.userRepository.countResetCodeByTime({
+      userId: user.id,
+      time: threeMinutesAgo,
+    });
+
+    if (count >= MAX_ATTEMPTS) {
+      throw new BadRequestException(`Too many request, try again later`);
+    }
+
     const code = codeGenerate();
-    const expiresAt = addMinutes(3);
+    const expiresAt = addMinutes(30);
     await this.userRepository.registerResetPassword({
       userId: user.id,
       code,
