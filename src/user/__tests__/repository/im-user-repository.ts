@@ -171,8 +171,8 @@ export class IMUserRepository implements UserRepository {
 
     this.resetPasswordCodes.forEach((resetCode) => {
       if (
-        (resetCode.userId === userId,
-        new Date(resetCode.createdAt).getTime() <= new Date(time).getTime())
+        resetCode.userId === userId &&
+        new Date(resetCode.createdAt).getTime() >= new Date(time).getTime()
       ) {
         count += 1;
       }
@@ -197,7 +197,7 @@ export class IMUserRepository implements UserRepository {
       id: user.id,
       name: user.name,
       email: user.email!,
-      phone: '',
+      phone: user.phone,
       emailVerified: user.emailVerified,
     };
   }

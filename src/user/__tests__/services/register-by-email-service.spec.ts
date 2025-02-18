@@ -7,13 +7,7 @@ let userRepository: IMUserRepository;
 let sub: RegisterByEmailService;
 
 const fakeMailService = {
-  sendEmailVerify: async ({
-    userId,
-    email,
-  }: {
-    userId: string;
-    email: string;
-  }) => {
+  sendEmailVerify: async ({ userId, email }) => {
     // console.log(`confirm-email/${userId}`);
   },
 } as MailService;
@@ -91,9 +85,8 @@ describe('[Service Tests] - Register By Email Service', () => {
 
     await sub.execute(data);
 
-    await sub.execute(data2).catch((err) => {
-      expect(err.status).toBe(400);
-      expect(err.message).toBe('You already have an account');
-    });
+    const error = await sub.execute(data2).catch((error) => error);
+    expect(error.status).toBe(400);
+    expect(error.message).toBe('You already have an account');
   });
 });

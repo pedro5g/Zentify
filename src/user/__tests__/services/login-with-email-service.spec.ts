@@ -14,13 +14,7 @@ const fakeJWTService = {
 } as JwtService;
 
 const fakeMailService = {
-  sendEmailVerify: async ({
-    userId,
-    email,
-  }: {
-    userId: string;
-    email: string;
-  }) => {
+  sendEmailVerify: async ({ userId, email }) => {
     // console.log(`confirm-email/${userId}`);
   },
 } as MailService;
@@ -74,12 +68,11 @@ describe('[Service Tests] - Login With Email Service', () => {
       password: '123456',
     };
 
-    await sub.execute(credentials).catch((error) => {
-      expect(error.status).toBe(400);
-      expect(error.message).toBe(
-        'Please, check your email box to confirmation it email before trying login',
-      );
-    });
+    const error = await sub.execute(credentials).catch((error) => error);
+    expect(error.status).toBe(400);
+    expect(error.message).toBe(
+      'Please, check your email box to confirmation it email before trying login',
+    );
   });
   it('Should be able to send an email if user not confirmation it email', async () => {
     const credentials = {
@@ -89,12 +82,11 @@ describe('[Service Tests] - Login With Email Service', () => {
 
     const sendEmailSpay = vitest.spyOn(fakeMailService, 'sendEmailVerify');
 
-    await sub.execute(credentials).catch((error) => {
-      expect(error.status).toBe(400);
-      expect(error.message).toBe(
-        'Please, check your email box to confirmation it email before trying login',
-      );
-    });
+    const error = await sub.execute(credentials).catch((error) => error);
+    expect(error.status).toBe(400);
+    expect(error.message).toBe(
+      'Please, check your email box to confirmation it email before trying login',
+    );
     expect(sendEmailSpay).toBeCalled();
   });
 
@@ -105,10 +97,9 @@ describe('[Service Tests] - Login With Email Service', () => {
       password: '123456',
     };
 
-    await sub.execute(credentials).catch((error) => {
-      expect(error.status).toBe(400);
-      expect(error.message).toBe('Ooh no! Your email or password are invalid');
-    });
+    const error = await sub.execute(credentials).catch((error) => error);
+    expect(error.status).toBe(400);
+    expect(error.message).toBe('Ooh no! Your email or password are invalid');
   });
   it('Should not be able to login with invalid password', async () => {
     userRepository.users[0].emailVerified = true;
@@ -117,9 +108,9 @@ describe('[Service Tests] - Login With Email Service', () => {
       password: 'incorrect_password',
     };
 
-    await sub.execute(credentials).catch((error) => {
-      expect(error.status).toBe(400);
-      expect(error.message).toBe('Ooh no! Your email or password are invalid');
-    });
+    const error = await sub.execute(credentials).catch((error) => error);
+
+    expect(error.status).toBe(400);
+    expect(error.message).toBe('Ooh no! Your email or password are invalid');
   });
 });

@@ -8,13 +8,7 @@ let registerUser: RegisterByEmailService;
 let sub: EmailVerifyService;
 
 const fakeMailService = {
-  sendEmailVerify: async ({
-    userId,
-    email,
-  }: {
-    userId: string;
-    email: string;
-  }) => {
+  sendEmailVerify: async ({ userId }) => {
     process.env.CONFIRM_EMAIL = userId;
   },
 } as MailService;
@@ -24,6 +18,10 @@ describe('[Service Tests] - Email verify Service', () => {
     userRepository = new IMUserRepository();
     registerUser = new RegisterByEmailService(userRepository, fakeMailService);
     sub = new EmailVerifyService(userRepository);
+  });
+
+  afterEach(() => {
+    process.env.CONFIRM_EMAIL = undefined;
   });
 
   it('Should be able to confirm an user email', async () => {
@@ -37,10 +35,26 @@ describe('[Service Tests] - Email verify Service', () => {
 
     // simulate reading email
     const userId = process.env.CONFIRM_EMAIL as string;
-    process.env.CONFIRM_EMAIL = undefined;
 
     await sub.execute({ userId });
 
     expect(userRepository.users[0].emailVerified).toBeTruthy();
+  });
+
+  it('should not be able to verify an user that not exists', async () => {
+    const data = {
+      name: 'Test',
+      email: 'test@gmail.com',
+      password: '123456',
+    };
+
+    await registerUser.execute(data);
+
+    const error = await sub
+      .execute({ userId: 'id_not_exists' })
+      .catch((error) => error);
+
+    expect(error.status).toBe(404);
+    expect(error.message).toBe('User not found');
   });
 });
